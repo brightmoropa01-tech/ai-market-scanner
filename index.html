@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Market Scanner</title>
+</head>
+<body>
+
+  <h1>AI Market Scanner</h1>
+
+  <p>Upload a screenshot of any trading chart and analyse the market.</p>
+
+  <input type="file" id="chartImage" accept="image/*">
+
+  <br><br>
+
+  <button onclick="analyseChart()">Analyse Chart</button>
+
+  <h2>Analysis</h2>
+  <div id="result">
+    Upload a chart screenshot to begin.
+  </div>
+
+  <script>
+    function analyseChart() {
+      const file = document.getElementById("chartImage").files[0];
+      const result = document.getElementById("result");
+
+      if (!file) {
+        result.innerHTML = "Please upload a chart screenshot first.";
+        return;
+      }
+
+      result.innerHTML = `
+        <p><strong>Chart received.</strong></p>
+        <p>The scanner is ready for AI analysis.</p>
+        <p>Market: Any supported market</p>
+        <p>Next step: Connect the AI analysis engine.</p>
+      `;
+    }
+  </script>
+
+</body>
+</html>
