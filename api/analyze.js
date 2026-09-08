@@ -10,20 +10,22 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: "No chart image provided." });
     }
 
-    const response = await fetch("https://api.openai.com/v1/responses", {
+    const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${process.env.OPENAI_API_KEY}`
+        "Authorization": `Bearer ${process.env.OPENROUTER_API_KEY}`,
+        "HTTP-Referer": "https://ai-market-scanner-five.vercel.app/",
+        "X-Title": "AI Market Scanner"
       },
       body: JSON.stringify({
-        model: "gpt-4.1-mini",
-        input: [
+        model: "openrouter/free",
+        messages: [
           {
             role: "user",
             content: [
               {
-                type: "input_text",
+                type: "text",
                 text: `You are an experienced technical market analyst.
 
 Analyse the trading chart in the image.
@@ -38,17 +40,19 @@ Identify the market/instrument if visible and analyse:
 7. Take-profit areas
 8. Risk/reward considerations
 9. Whether the setup is BUY, SELL, or WAIT
-10. Confidence level and the reasons for it
+10. Confidence level and reasons
 
-Do not invent prices that cannot be reasonably read from the chart.
+Do not invent prices that cannot reasonably be read from the chart.
 If the chart is unclear, say so.
 This is educational market analysis, not guaranteed financial advice.
 
-Return the answer in a clear, easy-to-read format.`
+Return a clear, easy-to-read analysis.`
               },
               {
-                type: "input_image",
-                image_url: image
+                type: "image_url",
+                image_url: {
+                  url: image
+                }
               }
             ]
           }
@@ -60,12 +64,14 @@ Return the answer in a clear, easy-to-read format.`
 
     if (!response.ok) {
       return res.status(response.status).json({
-        error: data.error?.message || "AI analysis failed."
+        error: data.error?.message || "OpenRouter analysis failed."
       });
     }
 
     return res.status(200).json({
-      analysis: data.output_text || "No analysis was returned."
+      analysis:
+        data.choices?.[0]?.message?.content ||
+        "No analysis was returned."
     });
 
   } catch (error) {
