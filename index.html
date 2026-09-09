@@ -3,90 +3,501 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
   <title>AI Market Scanner</title>
 
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      max-width: 800px;
-      margin: 0 auto;
-      padding: 30px 20px;
-      background: #f5f5f5;
+    * {
+      box-sizing: border-box;
     }
 
-    .container {
-      background: white;
-      padding: 25px;
-      border-radius: 15px;
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Arial, Helvetica, sans-serif;
+      background:
+        radial-gradient(circle at top, #17233d 0%, #080d18 45%, #03060c 100%);
+      color: #ffffff;
+      padding: 20px;
+    }
+
+    .scanner {
+      width: 100%;
+      max-width: 900px;
+      margin: auto;
+    }
+
+    /* HEADER */
+
+    .header {
+      text-align: center;
+      margin-bottom: 25px;
+    }
+
+    .robot {
+      width: 82px;
+      height: 82px;
+      margin: 0 auto 12px;
+      border: 2px solid #36f2ff;
+      border-radius: 22px;
+      background: linear-gradient(145deg, #14243c, #050a12);
+      box-shadow:
+        0 0 15px rgba(54, 242, 255, 0.4),
+        inset 0 0 20px rgba(54, 242, 255, 0.08);
+      position: relative;
+    }
+
+    .robot::before {
+      content: "";
+      position: absolute;
+      width: 42px;
+      height: 26px;
+      left: 18px;
+      top: 25px;
+      border: 2px solid #36f2ff;
+      border-radius: 8px;
+    }
+
+    .robot::after {
+      content: "●  ●";
+      position: absolute;
+      left: 23px;
+      top: 28px;
+      font-size: 13px;
+      letter-spacing: 7px;
+      color: #36f2ff;
+    }
+
+    .antenna {
+      position: absolute;
+      width: 3px;
+      height: 14px;
+      background: #36f2ff;
+      top: -15px;
+      left: 38px;
+    }
+
+    .antenna::after {
+      content: "";
+      position: absolute;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #36f2ff;
+      top: -5px;
+      left: -2px;
+      box-shadow: 0 0 10px #36f2ff;
     }
 
     h1 {
+      margin: 0;
+      font-size: 30px;
+      letter-spacing: 2px;
+    }
+
+    .subtitle {
+      margin-top: 8px;
+      color: #8d9bb5;
+      font-size: 14px;
+    }
+
+    /* MAIN PANEL */
+
+    .panel {
+      background: rgba(10, 16, 28, 0.92);
+      border: 1px solid #1d304b;
+      border-radius: 20px;
+      padding: 22px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+    }
+
+    .upload-area {
+      border: 2px dashed #263c5c;
+      border-radius: 15px;
+      padding: 25px 15px;
       text-align: center;
+      background: rgba(255,255,255,0.02);
+      transition: 0.2s;
     }
 
-    input {
-      width: 100%;
-      margin: 20px 0;
+    .upload-area:hover {
+      border-color: #36f2ff;
     }
 
-    button {
-      width: 100%;
-      padding: 15px;
+    .upload-title {
       font-size: 18px;
-      cursor: pointer;
+      font-weight: bold;
+      margin-bottom: 8px;
+    }
+
+    .upload-text {
+      color: #8d9bb5;
+      font-size: 13px;
+      margin-bottom: 18px;
+    }
+
+    input[type="file"] {
+      width: 100%;
+      color: #c8d2e5;
+      font-size: 14px;
     }
 
     #preview {
-      max-width: 100%;
+      width: 100%;
+      max-height: 500px;
+      object-fit: contain;
       margin-top: 20px;
-      border-radius: 10px;
+      border-radius: 12px;
       display: none;
+      border: 1px solid #253b58;
+      background: #02050a;
     }
+
+    /* BUTTON */
+
+    button {
+      width: 100%;
+      margin-top: 18px;
+      padding: 17px;
+      border: none;
+      border-radius: 12px;
+      font-size: 17px;
+      font-weight: bold;
+      color: #031018;
+      background: linear-gradient(90deg, #36f2ff, #6df7d8);
+      cursor: pointer;
+      box-shadow: 0 0 20px rgba(54,242,255,0.2);
+      transition: 0.2s;
+    }
+
+    button:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 0 30px rgba(54,242,255,0.4);
+    }
+
+    button:disabled {
+      opacity: 0.6;
+      cursor: wait;
+      transform: none;
+    }
+
+    /* LOADING */
+
+    .loading {
+      text-align: center;
+      padding: 35px 10px;
+      color: #36f2ff;
+    }
+
+    .loader {
+      width: 42px;
+      height: 42px;
+      margin: 0 auto 15px;
+      border: 4px solid #1b3048;
+      border-top-color: #36f2ff;
+      border-radius: 50%;
+      animation: spin 0.9s linear infinite;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    /* RESULT */
 
     #result {
       margin-top: 25px;
+    }
+
+    .signal-card {
+      background: #080f1b;
+      border: 1px solid #263c59;
+      border-radius: 18px;
+      overflow: hidden;
+    }
+
+    .signal-header {
+      padding: 22px;
+      text-align: center;
+      background: linear-gradient(
+        180deg,
+        rgba(54,242,255,0.08),
+        rgba(54,242,255,0.01)
+      );
+    }
+
+    .market {
+      font-size: 21px;
+      font-weight: bold;
+    }
+
+    .timeframe {
+      margin-top: 5px;
+      color: #91a0b9;
+      font-size: 13px;
+    }
+
+    .signal {
+      margin-top: 18px;
+      font-size: 27px;
+      font-weight: 900;
+      letter-spacing: 1px;
+    }
+
+    .buy {
+      color: #32e69b;
+    }
+
+    .sell {
+      color: #ff5e72;
+    }
+
+    .wait {
+      color: #ffc857;
+    }
+
+    .confidence {
+      margin-top: 8px;
+      color: #c5d0e2;
+      font-size: 15px;
+    }
+
+    .confidence-bar {
+      height: 8px;
+      background: #172337;
+      border-radius: 20px;
+      margin-top: 12px;
+      overflow: hidden;
+    }
+
+    .confidence-fill {
+      height: 100%;
+      width: 0;
+      background: #36f2ff;
+      transition: width 0.7s ease;
+    }
+
+    .status {
+      display: inline-block;
+      margin-top: 15px;
+      padding: 8px 14px;
+      border-radius: 20px;
+      background: #12251f;
+      color: #32e69b;
+      font-size: 12px;
+      font-weight: bold;
+    }
+
+    /* TRADE LEVELS */
+
+    .levels {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+      padding: 18px;
+    }
+
+    .level {
+      background: #0d1725;
+      border: 1px solid #1e3049;
+      border-radius: 12px;
+      padding: 14px;
+    }
+
+    .level-label {
+      color: #8190a9;
+      font-size: 11px;
+      text-transform: uppercase;
+      margin-bottom: 7px;
+    }
+
+    .level-value {
+      font-size: 17px;
+      font-weight: bold;
+    }
+
+    .entry .level-value {
+      color: #36f2ff;
+    }
+
+    .sl .level-value {
+      color: #ff5e72;
+    }
+
+    .tp .level-value {
+      color: #32e69b;
+    }
+
+    .rr .level-value {
+      color: #ffc857;
+    }
+
+    /* INFORMATION */
+
+    .section {
+      padding: 18px;
+      border-top: 1px solid #1a2a40;
+    }
+
+    .section-title {
+      font-weight: bold;
+      font-size: 14px;
+      margin-bottom: 10px;
+      color: #36f2ff;
+    }
+
+    .section-content {
+      color: #c4cede;
+      font-size: 14px;
+      line-height: 1.65;
+    }
+
+    .confirmations {
+      margin: 0;
+      padding-left: 20px;
+    }
+
+    .confirmations li {
+      margin-bottom: 5px;
+    }
+
+    .invalidation {
+      color: #ffb6bf;
+    }
+
+    .verdict {
       padding: 20px;
-      background: #f0f0f0;
-      border-radius: 10px;
+      border-top: 1px solid #1a2a40;
+      background: rgba(54,242,255,0.025);
+    }
+
+    .verdict-title {
+      color: #ffc857;
+      font-weight: bold;
+      margin-bottom: 8px;
+    }
+
+    /* RAW FALLBACK */
+
+    .raw-analysis {
       white-space: pre-wrap;
+      line-height: 1.65;
+      color: #cbd5e5;
+      font-size: 14px;
+    }
+
+    .error {
+      padding: 18px;
+      border-radius: 12px;
+      background: #291016;
+      border: 1px solid #6e2935;
+      color: #ff9da8;
+    }
+
+    @media (max-width: 600px) {
+
+      body {
+        padding: 10px;
+      }
+
+      .panel {
+        padding: 14px;
+      }
+
+      h1 {
+        font-size: 24px;
+      }
+
+      .levels {
+        grid-template-columns: 1fr;
+      }
+
+      .signal {
+        font-size: 23px;
+      }
     }
   </style>
 </head>
 
 <body>
 
-  <div class="container">
+  <div class="scanner">
 
-    <h1>AI Market Scanner</h1>
+    <div class="header">
 
-    <p>
-      Upload a screenshot of any trading chart and let the AI analyse it.
-    </p>
+      <div class="robot">
+        <div class="antenna"></div>
+      </div>
 
-    <input
-      type="file"
-      id="chartImage"
-      accept="image/*"
-    >
+      <h1>🤖 AI MARKET SCANNER</h1>
 
-    <img id="preview" alt="Chart preview">
+      <div class="subtitle">
+        Multi-Market AI Technical Analysis
+      </div>
 
-    <button onclick="analyseChart()">
-      Analyse Chart
-    </button>
+    </div>
 
-    <div id="result">
-      Upload a chart screenshot to begin.
+    <div class="panel">
+
+      <div class="upload-area">
+
+        <div class="upload-title">
+          Upload Trading Chart
+        </div>
+
+        <div class="upload-text">
+          Upload a screenshot from any market and let the AI analyse it.
+        </div>
+
+        <input
+          type="file"
+          id="chartImage"
+          accept="image/*"
+        >
+
+      </div>
+
+      <img
+        id="preview"
+        alt="Trading chart preview"
+      >
+
+      <button
+        id="analyseButton"
+        onclick="analyseChart()"
+      >
+        🤖 ANALYSE CHART
+      </button>
+
+      <div id="result">
+        <div class="raw-analysis">
+          Upload a chart screenshot to begin.
+        </div>
+      </div>
+
     </div>
 
   </div>
 
   <script>
-    const imageInput = document.getElementById("chartImage");
-    const preview = document.getElementById("preview");
-    const result = document.getElementById("result");
+
+    const imageInput =
+      document.getElementById("chartImage");
+
+    const preview =
+      document.getElementById("preview");
+
+    const result =
+      document.getElementById("result");
+
+    const analyseButton =
+      document.getElementById("analyseButton");
+
 
     imageInput.addEventListener("change", function () {
+
       const file = imageInput.files[0];
 
       if (!file) return;
@@ -94,63 +505,600 @@
       const reader = new FileReader();
 
       reader.onload = function (event) {
+
         preview.src = event.target.result;
+
         preview.style.display = "block";
+
       };
 
       reader.readAsDataURL(file);
+
     });
+
+
+    function extractValue(text, label) {
+
+      const regex =
+        new RegExp(
+          label +
+          "\\s*[:\\-]?\\s*([^\\n]+)",
+          "i"
+        );
+
+      const match = text.match(regex);
+
+      return match
+        ? match[1].trim()
+        : "Not clearly readable";
+
+    }
+
+
+    function extractSection(text, title) {
+
+      const regex =
+        new RegExp(
+          title +
+          "\\s*\\n([\\s\\S]*?)(?=\\n(?:📍|🛑|🎯|⚖️|📊|📈|🔎|⚠️|🧠|FINAL VERDICT|SIGNAL|CONFIDENCE|TRADE STATUS|MARKET|TIMEFRAME|CURRENT PRICE)|$)",
+          "i"
+        );
+
+      const match = text.match(regex);
+
+      return match
+        ? match[1].trim()
+        : "Not clearly available.";
+
+    }
+
+
+    function cleanValue(value) {
+
+      return value
+        .replace(/\*\*/g, "")
+        .replace(/`/g, "")
+        .trim();
+
+    }
+
+
+    function getSignalClass(signal) {
+
+      signal = signal.toUpperCase();
+
+      if (signal.includes("BUY")) {
+        return "buy";
+      }
+
+      if (signal.includes("SELL")) {
+        return "sell";
+      }
+
+      return "wait";
+
+    }
+
+
+    function getSignalIcon(signal) {
+
+      signal = signal.toUpperCase();
+
+      if (signal.includes("BUY")) {
+        return "🟢";
+      }
+
+      if (signal.includes("SELL")) {
+        return "🔴";
+      }
+
+      return "🟡";
+
+    }
+
+
+    function parseAnalysis(text) {
+
+      const market =
+        cleanValue(
+          extractValue(text, "MARKET")
+        );
+
+      const timeframe =
+        cleanValue(
+          extractValue(text, "TIMEFRAME")
+        );
+
+      const currentPrice =
+        cleanValue(
+          extractValue(text, "CURRENT PRICE")
+        );
+
+      const signal =
+        cleanValue(
+          extractValue(text, "SIGNAL")
+        );
+
+      const confidence =
+        cleanValue(
+          extractValue(text, "CONFIDENCE")
+        );
+
+      const status =
+        cleanValue(
+          extractValue(text, "TRADE STATUS")
+        );
+
+      const entry =
+        cleanValue(
+          extractSection(text, "📍 ENTRY ZONE")
+        );
+
+      const stop =
+        cleanValue(
+          extractSection(text, "🛑 STOP LOSS")
+        );
+
+      const takeProfit =
+        cleanValue(
+          extractSection(text, "🎯 TAKE PROFIT")
+        );
+
+      const rr =
+        cleanValue(
+          extractSection(text, "⚖️ RISK / REWARD")
+        );
+
+      const structure =
+        cleanValue(
+          extractSection(text, "📊 MARKET STRUCTURE")
+        );
+
+      const trend =
+        cleanValue(
+          extractSection(text, "📈 TREND")
+        );
+
+      const confirmations =
+        cleanValue(
+          extractSection(text, "🔎 CONFIRMATIONS")
+        );
+
+      const invalidation =
+        cleanValue(
+          extractSection(text, "⚠️ INVALIDATION")
+        );
+
+      const aiAnalysis =
+        cleanValue(
+          extractSection(text, "🧠 AI ANALYSIS")
+        );
+
+      const verdict =
+        cleanValue(
+          extractSection(text, "FINAL VERDICT")
+        );
+
+
+      return {
+        market,
+        timeframe,
+        currentPrice,
+        signal,
+        confidence,
+        status,
+        entry,
+        stop,
+        takeProfit,
+        rr,
+        structure,
+        trend,
+        confirmations,
+        invalidation,
+        aiAnalysis,
+        verdict
+      };
+
+    }
+
+
+    function confidenceNumber(value) {
+
+      const match =
+        value.match(/(\d+(?:\.\d+)?)/);
+
+      if (!match) return 0;
+
+      return Math.min(
+        100,
+        Math.max(
+          0,
+          Number(match[1])
+        )
+      );
+
+    }
+
+
+    function formatConfirmations(text) {
+
+      const lines =
+        text
+          .split("\n")
+          .map(line =>
+            line
+              .replace(/^[-•]\s*/, "")
+              .replace(/\*\*/g, "")
+              .trim()
+          )
+          .filter(Boolean);
+
+      if (!lines.length) {
+        return "<li>No clear confirmations available.</li>";
+      }
+
+      return lines
+        .map(item =>
+          `<li>${escapeHTML(item)}</li>`
+        )
+        .join("");
+
+    }
+
+
+    function escapeHTML(value) {
+
+      return String(value)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+
+    }
+
+
+    function renderAnalysis(text) {
+
+      const data =
+        parseAnalysis(text);
+
+      const signalClass =
+        getSignalClass(data.signal);
+
+      const icon =
+        getSignalIcon(data.signal);
+
+      const confidence =
+        confidenceNumber(data.confidence);
+
+      const statusClass =
+        data.status.toUpperCase().includes("NO TRADE")
+          ? "sell"
+          : data.status.toUpperCase().includes("WAIT")
+            ? "wait"
+            : "buy";
+
+
+      result.innerHTML = `
+
+        <div class="signal-card">
+
+          <div class="signal-header">
+
+            <div class="market">
+              ${escapeHTML(data.market)}
+            </div>
+
+            <div class="timeframe">
+              ${escapeHTML(data.timeframe)}
+              &nbsp; • &nbsp;
+              Price: ${escapeHTML(data.currentPrice)}
+            </div>
+
+            <div class="signal ${signalClass}">
+              ${icon} ${escapeHTML(data.signal)}
+            </div>
+
+            <div class="confidence">
+              Confidence:
+              <strong>${escapeHTML(data.confidence)}</strong>
+            </div>
+
+            <div class="confidence-bar">
+              <div
+                class="confidence-fill"
+                style="width:${confidence}%"
+              ></div>
+            </div>
+
+            <div class="status ${statusClass}">
+              ${escapeHTML(data.status)}
+            </div>
+
+          </div>
+
+
+          <div class="levels">
+
+            <div class="level entry">
+              <div class="level-label">
+                📍 Entry Zone
+              </div>
+
+              <div class="level-value">
+                ${escapeHTML(data.entry)}
+              </div>
+            </div>
+
+
+            <div class="level sl">
+              <div class="level-label">
+                🛑 Stop Loss
+              </div>
+
+              <div class="level-value">
+                ${escapeHTML(data.stop)}
+              </div>
+            </div>
+
+
+            <div class="level tp">
+              <div class="level-label">
+                🎯 Take Profit
+              </div>
+
+              <div class="level-value">
+                ${escapeHTML(data.takeProfit)}
+              </div>
+            </div>
+
+
+            <div class="level rr">
+              <div class="level-label">
+                ⚖️ Risk / Reward
+              </div>
+
+              <div class="level-value">
+                ${escapeHTML(data.rr)}
+              </div>
+            </div>
+
+          </div>
+
+
+          <div class="section">
+
+            <div class="section-title">
+              📊 MARKET STRUCTURE
+            </div>
+
+            <div class="section-content">
+              ${escapeHTML(data.structure)}
+            </div>
+
+          </div>
+
+
+          <div class="section">
+
+            <div class="section-title">
+              📈 TREND
+            </div>
+
+            <div class="section-content">
+              ${escapeHTML(data.trend)}
+            </div>
+
+          </div>
+
+
+          <div class="section">
+
+            <div class="section-title">
+              🔎 CONFIRMATIONS
+            </div>
+
+            <div class="section-content">
+
+              <ul class="confirmations">
+                ${formatConfirmations(data.confirmations)}
+              </ul>
+
+            </div>
+
+          </div>
+
+
+          <div class="section">
+
+            <div class="section-title">
+              ⚠️ INVALIDATION
+            </div>
+
+            <div class="section-content invalidation">
+              ${escapeHTML(data.invalidation)}
+            </div>
+
+          </div>
+
+
+          <div class="section">
+
+            <div class="section-title">
+              🧠 AI ANALYSIS
+            </div>
+
+            <div class="section-content">
+              ${escapeHTML(data.aiAnalysis)}
+            </div>
+
+          </div>
+
+
+          <div class="verdict">
+
+            <div class="verdict-title">
+              FINAL VERDICT
+            </div>
+
+            <div class="section-content">
+              ${escapeHTML(data.verdict)}
+            </div>
+
+          </div>
+
+        </div>
+
+      `;
+
+    }
+
 
     async function analyseChart() {
 
-      const file = imageInput.files[0];
+      const file =
+        imageInput.files[0];
 
       if (!file) {
-        result.textContent = "Please upload a chart screenshot first.";
+
+        result.innerHTML = `
+          <div class="error">
+            ⚠️ Please upload a chart screenshot first.
+          </div>
+        `;
+
         return;
       }
 
-      result.textContent = "⏳ Analysing your chart...";
+
+      analyseButton.disabled = true;
+
+      analyseButton.textContent =
+        "🤖 AI IS ANALYSING...";
+
+
+      result.innerHTML = `
+
+        <div class="loading">
+
+          <div class="loader"></div>
+
+          <strong>
+            AI is analysing your chart...
+          </strong>
+
+          <div style="margin-top:8px;color:#7f8da5;font-size:13px;">
+            Checking trend, structure, liquidity,
+            momentum and trade setup.
+          </div>
+
+        </div>
+
+      `;
+
 
       try {
 
-        const reader = new FileReader();
+        const reader =
+          new FileReader();
+
 
         reader.onload = async function () {
 
-          const base64Image = reader.result;
+          try {
 
-          const response = await fetch("/api/analyze", {
-            method: "POST",
+            const base64Image =
+              reader.result;
 
-            headers: {
-              "Content-Type": "application/json"
-            },
 
-            body: JSON.stringify({
-              image: base64Image
-            })
-          });
+            const response =
+              await fetch(
+                "/api/analyze",
+                {
+                  method: "POST",
 
-          const data = await response.json();
+                  headers: {
+                    "Content-Type":
+                      "application/json"
+                  },
 
-          if (!response.ok) {
-            throw new Error(data.error || "Analysis failed.");
+                  body: JSON.stringify({
+                    image: base64Image
+                  })
+                }
+              );
+
+
+            const data =
+              await response.json();
+
+
+            if (!response.ok) {
+
+              throw new Error(
+                data.error ||
+                "Analysis failed."
+              );
+
+            }
+
+
+            renderAnalysis(
+              data.analysis ||
+              "No analysis was returned."
+            );
+
+
+          } catch (error) {
+
+            result.innerHTML = `
+              <div class="error">
+                ❌ ${escapeHTML(error.message)}
+              </div>
+            `;
+
+          } finally {
+
+            analyseButton.disabled = false;
+
+            analyseButton.textContent =
+              "🤖 ANALYSE CHART";
+
           }
-
-          result.textContent = data.analysis;
 
         };
 
+
+        reader.onerror = function () {
+
+          throw new Error(
+            "Could not read the image."
+          );
+
+        };
+
+
         reader.readAsDataURL(file);
+
 
       } catch (error) {
 
-        result.textContent =
-          "❌ Error: " + error.message;
+        result.innerHTML = `
+          <div class="error">
+            ❌ ${escapeHTML(error.message)}
+          </div>
+        `;
+
+        analyseButton.disabled = false;
+
+        analyseButton.textContent =
+          "🤖 ANALYSE CHART";
 
       }
+
     }
+
   </script>
 
 </body>
